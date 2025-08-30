@@ -3,3 +3,97 @@ This is just a placeholder blank stylesheet so as to support adding custom style
 
 Read https://github.com/adityatelange/hugo-PaperMod/wiki/FAQs#bundling-custom-css-with-themes-assets for more info
 */
+
+
+/* 中文字体定义 */
+@font-face {
+    font-family:'LXGW';
+    src: url('/fonts/LXGWWenKaiMonoGBScreen.woff2') format('woff2');
+}
+
+
+/* 应用字体 */
+body {
+    font-family: Arial, 'LXGW', sans-serif;
+    font-size: 20px;
+    line-height: 1.8;
+    word-break: break-word;
+    background: var(--theme);
+    font-display: swap;
+}
+
+/* 代码块保持等宽字体 */
+code, pre {
+    font-family: 'Fira Code', 'Source Code Pro', monospace;
+}
+
+/* 自定义粗体颜色 */ 
+:root { 
+    --bold-color-1: #ff1492; 
+    --bold-color-2: #e74c3c; 
+    --bold-color-3: #9b59b6; 
+    --bold-color-4: #2ecc71; 
+} 
+.post-content strong { 
+    color: var(--bold-color-1); 
+} 
+/* 可选：为特定元素使用不同颜色 
+.special-content strong { 
+    color: var(--bold-color-2); 
+}
+*/
+
+.post-toc-float {
+    position: fixed !important;
+    top: 150px;
+    right: 45px;
+    width: 320px;
+    max-height: 200vh;
+    overflow-y: auto;
+    z-index: 999;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+}
+
+/* 目录固定右侧，内容留出空间 */
+@media (min-width: 1450px) {
+    .post-single {
+        margin-right: 10px !important; /* 留出目录宽度+间距 */
+    }
+    .post-toc-float {
+        display: block;
+    }
+}
+
+/* 小屏幕下隐藏目录 */
+@media (max-width: 1449px) {
+    .post-single {
+        margin-right: 0 !important;
+    }
+    .post-content-toc-wrapper {
+        display: flex;
+        flex-direction: column;
+    }
+    .post-toc-float {
+        display: block !important;
+        position: static !important;
+        width: auto;
+        max-height: none;
+        top: auto;
+        right: auto;
+        margin-bottom: 0px;
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+        padding: 0;
+        order: -1; /* 保证目录在内容前面 */
+    }
+}
+
+.toc a.active {
+    font-weight: bold;
+    color: var(--bold-color-1);
+}
+
