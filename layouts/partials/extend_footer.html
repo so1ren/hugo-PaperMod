@@ -2,15 +2,415 @@
 {{- /*     Insert any custom code web-analytics, resources, etc. here */ -}}
 {{- /* Footer custom content area end */ -}}
 
-<!--盘古之白--> 
 <script>
-    (function(u, c) {
-      var d = document, t = 'script', o = d.createElement(t),
-          s = d.getElementsByTagName(t)[0];
-      o.src = u;
-      if (c) { o.addEventListener('load', function(e) { c(e); }); }
-      s.parentNode.insertBefore(o, s);
-    })('//cdn.bootcss.com/pangu/3.3.0/pangu.min.js', function() {
-      pangu.spacingPage();
-    });
-    </script>
+   // 完整的JavaScript代码 - 优化目录折叠和展开动画
+document.addEventListener('DOMContentLoaded', function() {
+    // 等待页面完全渲染后再处理
+    setTimeout(function() {
+        // ===== 代码块功能 - 自动折叠长代码块 =====
+        document.querySelectorAll('.highlight').forEach(function(codeBlock) {
+            // 获取代码元素和类名
+            const codeElement = codeBlock.querySelector('code');
+            const classes = codeElement ? Array.from(codeElement.classList) : [];
+            
+            // 查找语言类
+            const languageClass = classes.find(cls => 
+                cls.startsWith('language-') || 
+                cls.startsWith('chroma-language-') ||
+                cls.startsWith('chroma-')
+            );
+            let langName = languageClass ? 
+                languageClass.replace('language-', '')
+                            .replace('chroma-language-', '')
+                            .replace('chroma-', '') : 'code';
+            
+            // 语言别名映射
+            const languageAliases = {
+              yml: 'yaml',
+              sh: 'bash',
+              zsh: 'bash',
+              shell: 'bash',
+              js: 'javascript',
+              ts: 'typescript',
+              py: 'python',
+              rs: 'rust',
+              docker: 'dockerfile',
+              mk: 'makefile',
+              conf: 'ini'
+            };
+            
+            // 标准化语言名称
+            if (langName in languageAliases) {
+              langName = languageAliases[langName];
+            }
+            
+            // 特殊处理HTML
+            if (langName === 'html' || langName === 'xml') {
+              langName = 'HTML';
+            } 
+            // 特殊处理Bash
+            else if (langName === 'bash') {
+              langName = 'Bash';
+            }
+            // 特殊处理YAML
+            else if (langName === 'yaml') {
+              langName = 'YAML';
+            }
+            // 首字母大写其他语言
+            else if (langName.length > 1) {
+              langName = langName.charAt(0).toUpperCase() + langName.slice(1);
+            }
+            
+            // 获取代码文本内容
+            const codeText = codeElement ? codeElement.textContent : '';
+            
+            // 计算代码行数
+            const lineCount = codeText.split('\n').length;
+            
+            // 设置自动折叠阈值
+            const LINE_THRESHOLD = 20;
+            
+            // 判断是否需要自动折叠
+            const shouldAutoFold = lineCount > LINE_THRESHOLD;
+            
+            // 获取或创建标题栏
+            let header = codeBlock.querySelector('.code-header');
+            if (!header) {
+                header = document.createElement('div');
+                header.className = 'code-header';
+                codeBlock.insertBefore(header, codeBlock.firstChild);
+            }
+            
+            // 清空标题栏
+            header.innerHTML = '';
+            
+            // 添加语言标签和行数信息
+            const langSpan = document.createElement('span');
+            langSpan.className = 'code-lang';
+            langSpan.textContent = `${langName} (${lineCount-1} 行)`;
+            header.appendChild(langSpan);
+            
+            // 创建按钮容器
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'code-buttons';
+            
+            // 添加折叠按钮
+            const foldBtn = document.createElement('button');
+            foldBtn.className = 'code-btn fold-btn';
+            foldBtn.title = '折叠代码';
+            foldBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
+            buttonContainer.appendChild(foldBtn);
+            
+            // 添加复制按钮
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'code-btn copy-btn';
+            copyBtn.title = '复制代码';
+            copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+            buttonContainer.appendChild(copyBtn);
+            
+            header.appendChild(buttonContainer);
+            
+            // 折叠功能
+            const toggleFold = function() {
+                codeBlock.classList.toggle('collapsed');
+                if (codeBlock.classList.contains('collapsed')) {
+                    foldBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>';
+                    foldBtn.title = '展开代码';
+                    langSpan.textContent = `${langName} (${lineCount-1} 行)`;
+                } else {
+                    foldBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
+                    foldBtn.title = '折叠代码';
+                    langSpan.textContent = `${langName} (${lineCount-1} 行)`;
+                }
+            };
+            
+            // 为折叠按钮添加点击事件
+            foldBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleFold();
+            });
+            
+            // 为标题栏添加点击事件
+            header.addEventListener('click', function() {
+                toggleFold();
+            });
+            
+            // 为复制按钮添加点击事件
+            copyBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const code = codeBlock.querySelector('code').innerText;
+                navigator.clipboard.writeText(code).then(function() {
+                    const originalHTML = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>';
+                    setTimeout(function() {
+                        copyBtn.innerHTML = originalHTML;
+                    }, 2000);
+                }).catch(function(err) {
+                    console.error('无法复制代码: ', err);
+                });
+            });
+            
+            // 如果代码过长，自动折叠
+            if (shouldAutoFold) {
+                codeBlock.classList.add('collapsed');
+                foldBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>';
+                foldBtn.title = '展开代码';
+                langSpan.textContent = `${langName} (${lineCount -1} 行 - 已折叠)`;
+            }
+        });
+        
+        // ===== 目录功能 - 优化折叠和展开动画 =====
+        const tocContainer = document.querySelector('.toc');
+        const tocFloat = document.querySelector('.post-toc-float');
+        const tocLinks = document.querySelectorAll('.toc a[href^="#"]');
+        let isScrolling = false;
+        let isMouseInToc = false;
+        
+        // 初始化目录折叠状态
+        function initTocCollapse() {
+            if (!tocContainer) return;
+            
+            // 找到所有有子菜单的目录项
+            const tocItemsWithChildren = tocContainer.querySelectorAll('li:has(ul)');
+            
+            // 默认折叠所有有子菜单的目录项
+            tocItemsWithChildren.forEach(item => {
+                item.classList.add('collapsed');
+            });
+            
+            // 监听目录区域的鼠标事件
+            if (tocFloat) {
+                tocFloat.addEventListener('mouseenter', () => {
+                    isMouseInToc = true;
+                });
+                
+                tocFloat.addEventListener('mouseleave', () => {
+                    isMouseInToc = false;
+                    setTimeout(() => {
+                        if (!isMouseInToc) {
+                            collapseNonActiveItems();
+                        }
+                    }, 500);
+                });
+            }
+        }
+        
+        // 折叠非活跃目录项
+        function collapseNonActiveItems() {
+            if (!tocContainer || isMouseInToc) return;
+            
+            const activeItem = tocContainer.querySelector('a.active');
+            if (!activeItem) return;
+            
+            const allItemsWithChildren = tocContainer.querySelectorAll('li:has(ul)');
+            
+            // 先折叠所有项
+            allItemsWithChildren.forEach(item => {
+                item.classList.add('collapsed');
+            });
+            
+            // 展开活跃项及其父级
+            let currentItem = activeItem.closest('li');
+            while (currentItem) {
+                currentItem.classList.remove('collapsed');
+                currentItem = currentItem.parentElement.closest('li');
+            }
+        }
+        
+        // 设置目录悬停和点击事件
+        function setupTocHover() {
+            if (!tocContainer) return;
+            
+            // 找到所有有子菜单的目录项
+            const tocItemsWithChildren = tocContainer.querySelectorAll('li:has(ul)');
+            
+            tocItemsWithChildren.forEach(item => {
+                const link = item.querySelector('a');
+                
+                // 鼠标悬停时展开
+                item.addEventListener('mouseenter', () => {
+                    if (isMouseInToc) {
+                        item.classList.remove('collapsed');
+                    }
+                });
+                
+                // 点击时切换展开/折叠
+                if (link) {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        
+                        const targetId = link.getAttribute('href').substring(1);
+                        const targetElement = document.getElementById(decodeURIComponent(targetId));
+                        
+                        if (targetElement) {
+                            // 滚动到目标位置
+                            window.scrollTo({
+                                top: targetElement.offsetTop - 100,
+                                behavior: 'smooth'
+                            });
+                            
+                            // 更新活跃状态
+                            tocLinks.forEach(l => l.classList.remove('active'));
+                            link.classList.add('active');
+                            
+                            // 切换当前项的展开状态
+                            item.classList.toggle('collapsed');
+                            
+                            // 确保目录滚动到正确位置
+                            setTimeout(scrollToActiveItem, 300);
+                        }
+                    });
+                }
+            });
+        }
+        
+        // 滚动到活跃目录项
+        function scrollToActiveItem() {
+            const activeLink = document.querySelector('.toc a.active');
+            if (!activeLink || !tocContainer || isScrolling) return;
+            
+            isScrolling = true;
+            
+            // 计算位置
+            const containerRect = tocContainer.getBoundingClientRect();
+            const activeRect = activeLink.getBoundingClientRect();
+            const offset = activeRect.top - containerRect.top - (containerRect.height / 3);
+            
+            // 平滑滚动
+            tocContainer.scrollTo({
+                top: tocContainer.scrollTop + offset,
+                behavior: 'smooth'
+            });
+            
+            // 重置滚动标志
+            setTimeout(() => {
+                isScrolling = false;
+            }, 800);
+        }
+        
+        // 滚动处理函数
+        function onScroll() {
+            let activeIndex = -1;
+            for (let i = 0; i < tocLinks.length; i++) {
+                if (tocLinks[i].hash) {
+                    const rawHref = tocLinks[i].getAttribute('href').replace('#', '');
+                    const id = decodeURIComponent(rawHref);
+                    const heading = document.getElementById(id);
+                    if (heading && heading.getBoundingClientRect().top - 100 < 0) {
+                        activeIndex = i;
+                    }
+                }
+            }
+            tocLinks.forEach((link, idx) => {
+                if (idx === activeIndex) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+            
+            if (activeIndex >= 0 && !isMouseInToc) {
+                collapseNonActiveItems();
+                scrollToActiveItem();
+            }
+        }
+        
+        // 添加防抖处理
+        let scrollTimeout;
+        window.addEventListener('scroll', function() {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(onScroll, 100);
+        });
+        
+        // 初始滚动定位
+        setTimeout(() => {
+            initTocCollapse();
+            setupTocHover();
+            onScroll();
+        }, 500);
+        
+        // ===== 目录点击动画增强 =====
+        tocLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(decodeURIComponent(targetId));
+                
+                if (targetElement) {
+                    e.preventDefault();
+                    
+                    // 滚动到目标位置
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // 更新活跃状态
+                    tocLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 确保目录滚动到正确位置
+                    setTimeout(scrollToActiveItem, 300);
+                }
+            });
+        });
+        
+        // 修复滚动条问题
+        if (tocFloat) {
+            tocFloat.style.overflowY = 'hidden';
+            tocFloat.style.padding = '0';
+            tocFloat.style.border = 'none';
+            tocFloat.style.boxShadow = 'none';
+            tocFloat.style.background = 'transparent';
+        }
+        
+        // ===== 优化目录折叠和展开动画 =====
+        function setupTocSmoothCollapse() {
+            const tocItems = document.querySelectorAll('.toc li:has(ul)');
+            
+            tocItems.forEach(item => {
+                const link = item.querySelector('a');
+                
+                // 添加类名标识有子菜单的项
+                item.classList.add('has-children');
+                
+                // 点击目录项切换折叠状态
+                link.addEventListener('click', function(e) {
+                    if (this.getAttribute('href') === '#' || this.getAttribute('href') === '#0') {
+                        e.preventDefault();
+                    }
+                    
+                    // 切换折叠状态
+                    item.classList.toggle('collapsed');
+                    
+                    // 阻止事件冒泡
+                    e.stopPropagation();
+                });
+                
+                // 添加键盘支持
+                link.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        item.classList.toggle('collapsed');
+                    }
+                });
+            });
+        }
+        
+        // 初始化目录平滑折叠
+        setupTocSmoothCollapse();
+        
+    }, 100); // 延迟100ms确保页面完全渲染
+});
+
+// 盘古之白脚本
+(function(u, c) {
+  var d = document, t = 'script', o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+  o.src = u;
+  if (c) { o.addEventListener('load', function(e) { c(e); }); }
+  s.parentNode.insertBefore(o, s);
+})('//cdn.bootcss.com/pangu/3.3.0/pangu.min.js', function() {
+  pangu.spacingPage();
+});
+</script>
+<!-- 盘古之白结束 -->
