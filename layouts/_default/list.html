@@ -79,9 +79,13 @@
       {{- end }}
     </h2>
   </header>
-  {{- if (ne (.Param "hideSummary") true) }}
+  {{- if (ne ($page.Param "hideSummary") true) }}
   <div class="entry-content">
-    <p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p>
+    {{- $sum := $page.Summary | plainify | htmlUnescape -}}
+    {{- if not $sum }}{{ $sum = $page.Description }}{{ end -}}
+    {{- if not $sum }}{{ $sum = $page.Param "description" }}{{ end -}}
+    {{- if not $sum }}{{ $sum = $page.Param "summary" }}{{ end -}}
+    <p>{{ $sum }}{{ if $page.Truncated }}...{{ end }}</p>
   </div>
   {{- end }}
   {{- if not (.Param "hideMeta") }}
