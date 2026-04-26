@@ -1,4 +1,52 @@
-{{- /* Head custom content area start */ -}}
-{{- /*     Insert any custom code (web-analytics, resources, etc.) - it will appear in the <head></head> section of every page. */ -}}
-{{- /*     Can be overwritten by partial with the same name in the global layouts. */ -}}
-{{- /* Head custom content area end */ -}}
+{{- /* 自定义 CSS 文件加载器 - PaperMod 主题 */ -}}
+{{- $cssFiles := slice 
+    "css/extended/base.css"
+    "css/extended/fonts.css"
+    "css/extended/components/navbar.css"
+    "css/extended/components/tags.css"
+    "css/extended/components/post-meta.css"
+    "css/extended/components/toc.css"
+    "css/extended/components/code-blocks.css"
+    "css/extended/components/blockquotes.css"
+    "css/extended/components/copyright.css"
+    "css/extended/components/links.css"
+    "css/extended/layouts/single.css"
+    "css/extended/layouts/responsive.css"
+    "css/extended/custom.css"
+    "css/extended/list.css"
+-}}
+
+{{- range $cssFiles -}}
+    {{- $style := resources.Get . -}}
+    {{- if $style -}}
+        {{- $style = $style | minify | fingerprint -}}
+        <link rel="stylesheet" 
+              href="{{ $style.Permalink }}" 
+              integrity="{{ $style.Data.Integrity }}" 
+              crossorigin="anonymous">
+    {{- else -}}
+        {{- warnf "CSS 文件未找到: %s" . -}}
+    {{- end -}}
+{{- end -}}
+
+{{- /* KaTeX 数学公式渲染 */ -}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/mhchem.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '\\[', right: '\\]', display: true}
+        ],
+        macros: {
+            "\\ce": "\\mathrm{#1}"
+        },
+        throwOnError: false
+    });
+});
+</script>
